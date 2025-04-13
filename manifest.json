@@ -1,0 +1,15 @@
+{
+  "name": "Mood du Soir",
+  "short_name": "Mood",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fff8f1",
+  "theme_color": "#ffc8a2",
+  "icons": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
