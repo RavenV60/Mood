@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mood du Soir</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon-512.png" type="image/png" />
@@ -95,10 +95,14 @@ function showPopupNotif(text) {
   }, 6000);
 }
 
-onValue(ref(db, 'moods/' + otherUser), (snapshot) => {
+onValue(ref(db, 'moods'), (snapshot) => {
   const data = snapshot.val();
-  if (data) {
-    const notif = `${otherUser} est en mode : ${data.mood}.` + (data.message ? ` Message : "${data.message}"` : '');
+  console.log("Snapshot complet reçu:", data);
+  if (!currentUser || !otherUser) return;
+  const otherData = data[otherUser];
+  if (otherData) {
+    const notif = `${otherUser} est en mode : ${otherData.mood}.` + (otherData.message ? ` Message : "${otherData.message}"` : '');
+    console.log("Notification reçue:", notif);
     document.getElementById('receivedMood').innerText = notif;
     if (window.navigator.vibrate) navigator.vibrate(200);
     localStorage.setItem('lastNotif', notif);
@@ -197,8 +201,10 @@ onValue(ref(db, 'moods/' + otherUser), (snapshot) => {
     <h1>Qui es-tu ce soir ?</h1>
     <button class="choice-btn" onclick="chooseProfile('Elle')">Je suis Marion</button>
     <button class="choice-btn" onclick="chooseProfile('Lui')">Je suis Christophe</button>
-  </div>  <div id="moodContainer"></div>
-  <button class="surprise-btn" onclick="surpriseMood()">Mood Surprise</button>  <div id="receivedMood"></div>
+  </div>
+  <div id="moodContainer"></div>
+  <button class="surprise-btn" onclick="surpriseMood()">Mood Surprise</button>
+  <div id="receivedMood"></div>
   <div id="popupNotif"></div>
 </body>
 </html>
