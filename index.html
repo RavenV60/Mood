@@ -1,11 +1,10 @@
-<!DOCTYPE html>
-<html lang="fr">
+<!DOCTYPE html><html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Mood du Soir</title>
   <link rel="manifest" href="manifest.json" />
-  <link rel="icon" href="icon-512.png" type="image/png" />
+  <link rel="icon" href="icons/icon-512.png" type="image/png" />
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import {
@@ -13,82 +12,100 @@
       ref,
       set,
       onValue
-    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";const firebaseConfig = {
+  apiKey: "AIzaSyCSg2vKVbGRELDnADwZay0MYKROyS8ROlk",
+  authDomain: "mood-du-soir.firebaseapp.com",
+  projectId: "mood-du-soir",
+  storageBucket: "mood-du-soir.firebasestorage.app",
+  messagingSenderId: "225343159437",
+  appId: "1:225343159437:web:a10b9a001a99838ac836c4",
+  databaseURL: "https://mood-du-soir-default-rtdb.europe-west1.firebasedatabase.app"
+};
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCSg2vKVbGRELDnADwZay0MYKROyS8ROlk",
-      authDomain: "mood-du-soir.firebaseapp.com",
-      projectId: "mood-du-soir",
-      storageBucket: "mood-du-soir.firebasestorage.app",
-      messagingSenderId: "225343159437",
-      appId: "1:225343159437:web:a10b9a001a99838ac836c4",
-      databaseURL: "https://mood-du-soir-default-rtdb.europe-west1.firebasedatabase.app"
-    };
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+const profils = {
+  "Elle": [
+    { emoji: "🦁", label: "Je te veux, là, maintenant." },
+    { emoji: "🦊", label: "Ce soir, surprends-moi… j’ai très envie." },
+    { emoji: "🐰", label: "J’ai envie de tendresse… et peut-être plus." },
+    { emoji: "🐈", label: "Envie d’un câlin tout doux." },
+    { emoji: "🐨", label: "Prends soin de moi… on verra ensuite." },
+    { emoji: "🐻", label: "Ce soir, juste toi près de moi. Rien de plus." }
+  ],
+  "Lui": [
+    { emoji: "🔥", label: "Dispo, motivé, et déjà en train de t’imaginer." },
+    { emoji: "🧲", label: "T’es magnétique ce soir. Et moi, réceptif." },
+    { emoji: "🥃", label: "Ambiance posée… je te laisse décider." },
+    { emoji: "🛋️", label: "Juste toi, moi, une vibe tranquille." },
+    { emoji: "🤲", label: "Besoin de proximité, juste te sentir là." },
+    { emoji: "🌙", label: "Pas d’élan ce soir, mais j’aime que tu sois là." }
+  ]
+};
 
-    const profils = {
-      "Elle": [
-        { emoji: "🦁", label: "Je te veux, là, maintenant." },
-        { emoji: "🦊", label: "Ce soir, surprends-moi… j’ai très envie." },
-        { emoji: "🐰", label: "J’ai envie de tendresse… et peut-être plus." },
-        { emoji: "🐈", label: "Envie d’un câlin tout doux." },
-        { emoji: "🐨", label: "Prends soin de moi… on verra ensuite." },
-        { emoji: "🐻", label: "Ce soir, juste toi près de moi. Rien de plus." }
-      ],
-      "Lui": [
-        { emoji: "🔥", label: "Dispo, motivé, et déjà en train de t’imaginer." },
-        { emoji: "🧲", label: "T’es magnétique ce soir. Et moi, réceptif." },
-        { emoji: "🥃", label: "Ambiance posée… je te laisse décider." },
-        { emoji: "🛋️", label: "Juste toi, moi, une vibe tranquille." },
-        { emoji: "🤲", label: "Besoin de proximité, juste te sentir là." },
-        { emoji: "🌙", label: "Pas d’élan ce soir, mais j’aime que tu sois là." }
-      ]
-    };
+let currentUser = null;
+let otherUser = null;
+let profile = null;
 
-    let currentUser = null;
-    let otherUser = null;
-    let profile = null;
+window.chooseProfile = function (role) {
+  currentUser = role;
+  otherUser = role === "Elle" ? "Lui" : "Elle";
+  profile = profils[role];
+  document.getElementById("intro").style.display = "none";
+  const container = document.getElementById("moodContainer");
+  profile.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "mood-option";
+    div.onclick = () => sendMood(m.emoji, m.label);
+    div.innerHTML = `<div class='animal'>${m.emoji}</div><div class='message'>${m.label}</div>`;
+    container.appendChild(div);
+  });
+  const lastNotif = localStorage.getItem('lastNotif');
+  if (lastNotif) showPopupNotif(lastNotif);
+}
 
-    window.chooseProfile = function (role) {
-      currentUser = role;
-      otherUser = role === "Elle" ? "Lui" : "Elle";
-      profile = profils[role];
-      document.getElementById("intro").style.display = "none";
-      const container = document.getElementById("moodContainer");
-      profile.forEach(m => {
-        const div = document.createElement("div");
-        div.className = "mood-option";
-        div.onclick = () => sendMood(m.emoji, m.label);
-        div.innerHTML = `<div class='animal'>${m.emoji}</div><div class='message'>${m.label}</div>`;
-        container.appendChild(div);
-      });
-    }
+window.sendMood = function(emoji, label) {
+  const message = prompt("Un petit mot à ajouter ? (optionnel)");
+  set(ref(db, 'moods/' + currentUser), {
+    mood: `${emoji} ${label}`,
+    message: message || '',
+    timestamp: Date.now()
+  });
+}
 
-    window.sendMood = function(emoji, label) {
-      const message = prompt("Un petit mot à ajouter ? (optionnel)");
-      set(ref(db, 'moods/' + currentUser), {
-        mood: `${emoji} ${label}`,
-        message: message || '',
-        timestamp: Date.now()
-      });
-    }
+window.surpriseMood = function() {
+  if (!profile) return;
+  const random = profile[Math.floor(Math.random() * profile.length)];
+  sendMood(random.emoji, random.label);
+}
 
-    window.surpriseMood = function() {
-      if (!profile) return;
-      const random = profile[Math.floor(Math.random() * profile.length)];
-      sendMood(random.emoji, random.label);
-    }
+function showPopupNotif(text) {
+  const popup = document.getElementById("popupNotif");
+  popup.innerText = text;
+  popup.style.display = "block";
+  popup.classList.add("fade-in");
+  setTimeout(() => {
+    popup.classList.remove("fade-in");
+    popup.classList.add("fade-out");
+    setTimeout(() => {
+      popup.style.display = "none";
+      popup.classList.remove("fade-out");
+    }, 1000);
+  }, 6000);
+}
 
-    onValue(ref(db, 'moods/' + otherUser), (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const notif = `${otherUser} est en mode : ${data.mood}.` + (data.message ? ` Message : \"${data.message}\"` : '');
-        document.getElementById('receivedMood').innerText = notif;
-        if (window.navigator.vibrate) navigator.vibrate(200);
-      }
-    });
+onValue(ref(db, 'moods/' + otherUser), (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    const notif = `${otherUser} est en mode : ${data.mood}.` + (data.message ? ` Message : "${data.message}"` : '');
+    document.getElementById('receivedMood').innerText = notif;
+    if (window.navigator.vibrate) navigator.vibrate(200);
+    localStorage.setItem('lastNotif', notif);
+    showPopupNotif(notif);
+  }
+});
+
   </script>
   <style>
     body {
@@ -145,6 +162,34 @@
       border-radius: 1rem;
       cursor: pointer;
     }
+    #popupNotif {
+      display: none;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ffefc4;
+      padding: 1rem 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+      font-size: 1rem;
+      max-width: 90%;
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease forwards;
+    }
+    .fade-out {
+      animation: fadeOut 1s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, -20px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translate(-50%, 0); }
+      to { opacity: 0; transform: translate(-50%, -20px); }
+    }
   </style>
 </head>
 <body>
@@ -152,11 +197,8 @@
     <h1>Qui es-tu ce soir ?</h1>
     <button class="choice-btn" onclick="chooseProfile('Elle')">Je suis Marion</button>
     <button class="choice-btn" onclick="chooseProfile('Lui')">Je suis Christophe</button>
-  </div>
-
-  <div id="moodContainer"></div>
-  <button class="surprise-btn" onclick="surpriseMood()">Mood Surprise</button>
-
-  <div id="receivedMood"></div>
+  </div>  <div id="moodContainer"></div>
+  <button class="surprise-btn" onclick="surpriseMood()">Mood Surprise</button>  <div id="receivedMood"></div>
+  <div id="popupNotif"></div>
 </body>
 </html>
