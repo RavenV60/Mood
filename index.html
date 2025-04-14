@@ -26,21 +26,21 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const profils = {
-  "Elle": [
-    { emoji: "❤️‍🔥", label: "Je te veux, là, maintenant." },
-    { emoji: "💓", label: "Ce soir, surprends-moi… j’ai très envie." },
-    { emoji: "💞", label: "J’ai envie de tendresse… et peut-être plus." },
-    { emoji: "💗", label: "Envie d’un câlin tout doux." },
-    { emoji: "💋", label: "Prends soin de moi… on verra ensuite." },
-    { emoji: "✨️", label: "Ce soir, juste toi près de moi. Rien de plus." }
+  "Bliss": [
+    { emoji: "💋", label: "Là, tout de suite. C’est une urgence délicieuse." },
+    { emoji: "🔥", label: "J’ai envie de tes mains, de ta bouche, de ton odeur." },
+    { emoji: "🌹", label: "Fais-moi frissonner. Ce soir, je suis toute en attente." },
+    { emoji: "👀", label: "Envie de lenteur, de regards qui déshabillent." },
+    { emoji: "💫", label: "Un baiser, un frôlement… et le reste viendra peut-être." },
+    { emoji: "☕", label: "Je te veux près de moi. Juste ta chaleur." }
   ],
-  "Lui": [
-    { emoji: "🔥", label: "Dispo, motivé, et déjà en train de t’imaginer." },
-    { emoji: "🧲", label: "T’es magnétique ce soir. Et moi, réceptif." },
-    { emoji: "🥃", label: "Ambiance posée… je te laisse décider." },
-    { emoji: "🛋️", label: "Juste toi, moi, une vibe tranquille." },
-    { emoji: "🤲", label: "Besoin de proximité, juste te sentir là." },
-    { emoji: "🌙", label: "Pas d’élan ce soir, mais j’aime que tu sois là." }
+  "Raven": [
+    { emoji: "❤️", label: "J’ai envie de sentir tes ongles sur ma peau." },
+    { emoji: "🧲", label: "Mon imagination a déjà pris une longueur d’avance." },
+    { emoji: "✨", label: "Touche-moi du regard. Le reste viendra." },
+    { emoji: "🎶", label: "Viens contre moi, je te laisse choisir le tempo." },
+    { emoji: "🕯️", label: "Je suis là. Disponible. Curieux." },
+    { emoji: "🌒", label: "Pas d’élan ce soir… mais j’ai besoin de ton parfum." }
   ]
 };
 
@@ -50,10 +50,11 @@ let profile = null;
 
 window.chooseProfile = function (role) {
   currentUser = role;
-  otherUser = role === "Elle" ? "Lui" : "Elle";
+  otherUser = role === "Bliss" ? "Raven" : "Bliss";
   profile = profils[role];
   document.getElementById("intro").style.display = "none";
   const container = document.getElementById("moodContainer");
+  container.innerHTML = '';
   profile.forEach(m => {
     const div = document.createElement("div");
     div.className = "mood-option";
@@ -113,8 +114,9 @@ onValue(ref(db, 'moods'), (snapshot) => {
   </script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #fff8f1;
+      font-family: 'Cormorant Garamond', serif;
+      background: #1c1b1f;
+      color: #f5e1cc;
       padding: 2rem;
       text-align: center;
     }
@@ -127,19 +129,21 @@ onValue(ref(db, 'moods'), (snapshot) => {
       font-size: 1.2rem;
       border-radius: 1rem;
       border: none;
-      background-color: #ffc8a2;
+      background-color: #8c2f39;
+      color: #f5e1cc;
       cursor: pointer;
     }
     .mood-option {
       margin: 1rem 0;
       padding: 1rem;
       border-radius: 1rem;
-      background-color: #f0e4d7;
+      background-color: #2d2b30;
       cursor: pointer;
       transition: transform 0.2s;
     }
     .mood-option:hover {
       transform: scale(1.05);
+      background-color: #3b2d34;
     }
     .animal {
       font-size: 3rem;
@@ -152,16 +156,17 @@ onValue(ref(db, 'moods'), (snapshot) => {
     #receivedMood {
       margin-top: 2rem;
       padding: 1rem;
-      background: #ffffff;
+      background: #2a2428;
       border-radius: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0,0,0,0.4);
       font-size: 1rem;
     }
     .surprise-btn {
       margin-top: 2rem;
       padding: 1rem 2rem;
       font-size: 1.1rem;
-      background-color: #e0b0ff;
+      background-color: #b3477a;
+      color: #fff8f1;
       border: none;
       border-radius: 1rem;
       cursor: pointer;
@@ -172,10 +177,10 @@ onValue(ref(db, 'moods'), (snapshot) => {
       top: 10px;
       left: 50%;
       transform: translateX(-50%);
-      background-color: #ffefc4;
+      background-color: #463640;
       padding: 1rem 1.5rem;
       border-radius: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
       z-index: 1000;
       font-size: 1rem;
       max-width: 90%;
@@ -199,8 +204,8 @@ onValue(ref(db, 'moods'), (snapshot) => {
 <body>
   <div id="intro">
     <h1>Qui es-tu ce soir ?</h1>
-    <button class="choice-btn" onclick="chooseProfile('Elle')">Je suis Marion</button>
-    <button class="choice-btn" onclick="chooseProfile('Lui')">Je suis Christophe</button>
+    <button class="choice-btn" onclick="chooseProfile('Bliss')">Je suis Bliss</button>
+    <button class="choice-btn" onclick="chooseProfile('Raven')">Je suis Raven</button>
   </div>
   <div id="moodContainer"></div>
   <button class="surprise-btn" onclick="surpriseMood()">Mood Surprise</button>
