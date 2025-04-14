@@ -11,6 +11,7 @@
       getDatabase,
       ref,
       set,
+      remove,
       onValue
     } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";const firebaseConfig = {
   apiKey: "AIzaSyCSg2vKVbGRELDnADwZay0MYKROyS8ROlk",
@@ -53,6 +54,7 @@ window.chooseProfile = function (role) {
   otherUser = role === "Bliss" ? "Raven" : "Bliss";
   profile = profils[role];
   document.getElementById("intro").style.display = "none";
+  document.getElementById("reinitBtn").style.display = "inline-block";
   const container = document.getElementById("moodContainer");
   container.innerHTML = '';
   profile.forEach(m => {
@@ -73,6 +75,26 @@ window.sendMood = function(emoji, label) {
     message: message || '',
     timestamp: Date.now()
   });
+}
+
+window.resetMood = function() {
+  if (!currentUser) return;
+  remove(ref(db, 'moods/' + currentUser));
+  localStorage.removeItem('lastNotif');
+  document.getElementById('popupNotif').style.display = 'none';
+  document.getElementById('receivedMood').innerText = '';
+  const popup = document.getElementById("popupNotif");
+  popup.innerText = "Mood supprimé.";
+  popup.style.display = "block";
+  popup.classList.add("fade-in");
+  setTimeout(() => {
+    popup.classList.remove("fade-in");
+    popup.classList.add("fade-out");
+    setTimeout(() => {
+      popup.style.display = "none";
+      popup.classList.remove("fade-out");
+    }, 1000);
+  }, 2000);
 }
 
 window.surpriseMood = function() {
@@ -199,6 +221,16 @@ onValue(ref(db, 'moods'), (snapshot) => {
       from { opacity: 1; transform: translate(-50%, 0); }
       to { opacity: 0; transform: translate(-50%, -20px); }
     }
+    .reset-btn {
+      margin-top: 1rem;
+      padding: 0.8rem 1.5rem;
+      background-color: #44222b;
+      color: #f5e1cc;
+      border: none;
+      border-radius: 1rem;
+      cursor: pointer;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -209,6 +241,7 @@ onValue(ref(db, 'moods'), (snapshot) => {
   </div>
   <div id="moodContainer"></div>
   <button class="surprise-btn" onclick="surpriseMood()">Mood Surprise</button>
+  <button id="reinitBtn" class="reset-btn" onclick="resetMood()">Supprimer mon mood</button>
   <div id="receivedMood"></div>
   <div id="popupNotif"></div>
 </body>
